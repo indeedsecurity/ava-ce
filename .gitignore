@@ -1,0 +1,8 @@
+.idea/
+.cache/
+venv/
+build/
+dist/
+ava.egg-info/
+*.pyc
+.coverage

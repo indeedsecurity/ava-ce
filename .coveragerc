@@ -1,0 +1,2 @@
+[run]
+omit = ava/__main__.py

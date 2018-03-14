@@ -1,0 +1,39 @@
+#------------------------#
+# AVA Configuration File #
+#------------------------#
+
+# Auditors and Checks #
+auditors:
+  - parameter
+actives:
+  - xss
+  - open_redirect
+blinds:
+passives:
+
+# HTTP Elements #
+parameters:
+cookies:
+headers:
+value:
+
+# Filters #
+domain: "www.example.com"
+excludes:
+skips:
+ignores:
+reduce:
+
+# HTTP Settings #
+follow:
+proxy:
+agent:
+timeout:
+
+# Performance #
+processes:
+threads:
+
+# Reporting #
+report: "report.json"
+summary:
