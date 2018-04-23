@@ -66,8 +66,12 @@ class OpenRedirectCheck(_ValueCheck):
         # contains
         contains = parsed.scheme + "://" + domain + "/" + parsed.netloc
 
+        # spliced
+        spliced = domain.split('.')[:2] + parsed.netloc.split('.')[-2:]
+        spliced = parsed.scheme + "://" + "{}.{}-{}.{}".format(*spliced)
+
         # dynamic
-        dynamic = [basic_auth, starts_with, ends_with, contains]
+        dynamic = [basic_auth, starts_with, ends_with, contains, spliced]
 
         return self._payloads + dynamic
 
