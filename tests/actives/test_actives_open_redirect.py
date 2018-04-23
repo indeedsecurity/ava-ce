@@ -21,7 +21,8 @@ class TestOpenRedirectCheck:
         "http://www.example.com:pass@www.avascan.com",
         "http://www.example.com.www.avascan.com",
         "http://www.avascan.com\\www.example.com",
-        "http://www.avascan.com/www.example.com"
+        "http://www.avascan.com/www.example.com",
+        "http://www.avascan-example.com"
     ]
 
     @pytest.fixture
