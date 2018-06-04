@@ -1,9 +1,11 @@
 import string
-from urllib.parse import urlparse
+from urllib.parse import urlparse, unquote
 from bs4 import BeautifulSoup
 from ava.common import utility
 from ava.common.check import _ValueCheck
 from ava.common.constant import HTTP
+from pyjsparser import PyJsParser, JsSyntaxError
+import re
 
 # metadata
 name = __name__
@@ -80,7 +82,11 @@ class CrossSiteScriptingLinkCheck(_ValueCheck):
     def __init__(self):
         """Define static payload"""
         payloads = [
-            "javascript:{}()"
+            "javascript:{}()",
+            '");{}();//',
+            "%22);{}();//",
+            "');{}();//",
+            "%27);{}();//"
         ]
 
         # generate random and add to payloads
@@ -104,11 +110,19 @@ class CrossSiteScriptingLinkCheck(_ValueCheck):
 
         # check <a href="">
         soup = BeautifulSoup(response.text, "html.parser")
-        tags = soup.find("a", attrs={"href": payload})
-        if tags:
-            return True
-        else:
-            return False
+        tags = soup.findAll("a", attrs={"href": re.compile(r"^javascript:")})
+        parser = PyJsParser()
+        for tag in tags:
+            text = unquote(tag["href"][len("javascript:"):])
+            try:
+                tree = parser.parse(text)
+                for expr in tree["body"]:
+                    callee = expr["expression"]["callee"]
+                    if callee["type"] == "Identifier" and callee["name"] == self._random:
+                        return True
+            except JsSyntaxError:
+                pass
+        return False
 
 
 class CrossSiteScriptingScriptSrcCheck(_ValueCheck):

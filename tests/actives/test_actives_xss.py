@@ -82,7 +82,11 @@ class TestCrossSiteScriptingCheck:
 
 class TestCrossSiteScriptingLinkCheck:
     payloads = [
-        "javascript:avascan()"
+        "javascript:avascan()",
+        '");avascan();//',
+        "%22);avascan();//",
+        "');avascan();//",
+        "%27);avascan();//"
     ]
 
     @pytest.fixture
@@ -101,6 +105,16 @@ class TestCrossSiteScriptingLinkCheck:
         response.text = '<html><head></head><body><a href="javascript:avascan()">Link</a></body></html>'
         response.headers['Content-Type'] = "text/html"
         test = check.check(response, check._payloads[0])
+        assert test
+
+        # true positive
+        response.text = '<html><head></head><body><a href=\'javascript:console.log("ava");avascan();//ava\'>Link</a></body></html>'
+        test = check.check(response, check._payloads[1])
+        assert test
+
+        # true positive urlencode
+        response.text = '<html><head></head><body><a href=\'javascript:console.log("ava%22);avascan();//ava\'>Link</a></body></html>'
+        test = check.check(response, check._payloads[2])
         assert test
 
     def test_check_true_negative(self, check, response):
@@ -122,6 +136,11 @@ class TestCrossSiteScriptingLinkCheck:
         test = check.check(response, check._payloads[0])
         assert not test
     
+        # true negative escape
+        response.text = '<html><head></head><body><a href=\'javascript:console.log("ava\\");avascan();//ava\'>Link</a></body></html>'
+        test = check.check(response, check._payloads[1])
+        assert not test
+
         # true negative application/json
         response.text = '{<a href="javascript:avascan()">}'
         response.headers['Content-Type'] = "application/json"
