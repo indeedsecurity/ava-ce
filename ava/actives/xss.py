@@ -4,7 +4,6 @@ from bs4 import BeautifulSoup
 from ava.common import utility
 from ava.common.check import _ValueCheck
 from ava.common.constant import HTTP
-from pyjsparser import PyJsParser, JsSyntaxError
 import re
 
 # metadata
@@ -108,20 +107,13 @@ class CrossSiteScriptingLinkCheck(_ValueCheck):
         if 'Content-Type' in response.headers and HTTP.CONTENT_TYPE.HTML not in response.headers['Content-Type']:
             return False
 
-        # check <a href="">
+        # look for payload in href attribute which starts with "javascript:"
         soup = BeautifulSoup(response.text, "html.parser")
         tags = soup.findAll("a", attrs={"href": re.compile(r"^javascript:")})
-        parser = PyJsParser()
         for tag in tags:
             text = unquote(tag["href"][len("javascript:"):])
-            try:
-                tree = parser.parse(text)
-                for expr in tree["body"]:
-                    callee = expr["expression"]["callee"]
-                    if callee["type"] == "Identifier" and callee["name"] == self._random:
-                        return True
-            except JsSyntaxError:
-                pass
+            if self._random in utility.parse_javascript(text):
+                return True
         return False
 
 
