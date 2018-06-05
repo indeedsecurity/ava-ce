@@ -107,6 +107,30 @@ class HarReader:
         # default
         return True
 
+    def _change_hostname(self, vector, url):
+        """
+        Change the hostname in request url.
+        :param vector: vector dictionary
+        :param url: url string
+        """
+        # parse url in vector
+        parsed = parse.urlparse(vector['url'])
+
+        if url.startswith("http"):
+            # parse url in configs
+            parsed_in_configs = parse.urlparse(url)
+
+            # use specified scheme
+            scheme = parsed_in_configs.scheme
+            netloc = parsed_in_configs.netloc
+        else:
+            # use original scheme
+            scheme = parsed.scheme
+            netloc = url
+
+        # change request url
+        vector['url'] = scheme + "://" + netloc + parsed.path
+
     def _check_domain(self, vector, configs, num, name):
         """
         Checks if the url's hostname is within the domain. Returns the result of the check.
@@ -394,6 +418,10 @@ class HarReader:
             # check url
             if not self._check_url(vector, i+1, name):
                 continue
+
+            # change host
+            if configs['url']:
+                self._change_hostname(vector, configs['url'])
 
             # check domain
             if not self._check_domain(vector, configs, i+1, name):

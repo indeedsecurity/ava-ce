@@ -1,6 +1,7 @@
 import logging
 import os
 import socket
+import re
 from copy import copy
 from urllib.parse import urlparse
 from ava.common.exception import InvalidValueException, UnknownKeyException
@@ -28,6 +29,7 @@ defaults = {
     'processes': 4,
     'threads': 4,
     'value': "",
+    'url': "",
     'follow': False,
     'reduce': False,
     'summary': False
@@ -154,6 +156,28 @@ def _check_proxy(proxy):
 
     return proxy
 
+def _check_alternative_url(alternative):
+    """
+    Checks the url is in {http|https}://hostname[:port] format or hostname[:port]. InvalidValueException is raised, if it is not
+    :param url: url string
+    :return: url string
+    """
+    # extract parts
+    url = alternative if alternative.startswith("http") else "http://" + alternative
+    parsed = urlparse(url)
+
+    # check port
+    try:
+        parsed.port
+    except ValueError:
+        raise InvalidValueException("URL port must be an integer")
+
+    # check hostname exists and path doesn't exists
+    if not parsed.hostname or parsed.path:
+        raise InvalidValueException("URL must be in {http|https}://hostname[:port] format or hostname[:port]")
+
+    return alternative
+
 
 def generate(sys_args, yaml_args):
     """
@@ -206,6 +230,9 @@ def generate(sys_args, yaml_args):
         # proxy
         elif key == 'proxy':
             configs[key] = _check_proxy(values)
+        # url
+        elif key == 'url':
+            configs[key] = _check_alternative_url(values)
         # hars
         elif key == 'hars':
             configs[key] = values

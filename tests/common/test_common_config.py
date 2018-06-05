@@ -151,6 +151,42 @@ def test_check_proxy_negative():
         config._check_proxy("127.0.0.1:test")
 
 
+def test_check_alternative_url_positive():
+    # ip
+    test = config._check_alternative_url("127.0.0.1")
+    assert test == "127.0.0.1"
+
+    # http
+    test = config._check_alternative_url("http://127.0.0.1")
+    assert test == "http://127.0.0.1"
+
+    # https
+    test = config._check_alternative_url("https://127.0.0.1")
+    assert test == "https://127.0.0.1"
+
+    # http with port
+    test = config._check_alternative_url("http://127.0.0.1:80")
+    assert test == "http://127.0.0.1:80"
+
+
+def test_check_alternative_url_negative():
+    # invalid port
+    with pytest.raises(InvalidValueException):
+        config._check_alternative_url("127.0.0.1:test")
+
+    # with path
+    with pytest.raises(InvalidValueException):
+        config._check_alternative_url("http://127.0.0.1/path")
+
+    # with path
+    with pytest.raises(InvalidValueException):
+        config._check_alternative_url("127.0.0.1/path")
+
+    # wrong scheme
+    with pytest.raises(InvalidValueException):
+        config._check_alternative_url("ftp://127.0.0.1")
+
+
 def test_generate_positive():
     users = {
         'auditors': ["parameter", "cookie"],
@@ -173,6 +209,7 @@ def test_generate_positive():
         'value': "test",
         'follow': True,
         'reduce': True,
+        'url': "127.0.0.1",
         'summary': True,
         'hars': ["vectors.har"]
     }
@@ -198,6 +235,7 @@ def test_generate_positive():
         'value': "test",
         'follow': True,
         'reduce': True,
+        'url': "127.0.0.1",
         'summary': True,
         'hars': ["vectors.har"]
     }

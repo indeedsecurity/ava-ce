@@ -226,6 +226,37 @@ class TestVectorReader:
         test = reader._check_url(url, 1, "file.har")
         assert not test
 
+    def test_change_hostname(self, reader):
+        # hostname
+        vector = {'url': "http://127.0.0.1/", 'headers': {'Host': "127.0.0.1"}}
+        url = "example.com"
+        test = reader._change_hostname(vector, url)
+        assert vector['url'] == "http://example.com/"
+
+        # hostname with port
+        vector = {'url': "http://127.0.0.1/", "headers": {"Host": "127.0.0.1"}}
+        url = "example.com:80"
+        test = reader._change_hostname(vector, url)
+        assert vector['url'] == "http://example.com:80/"
+
+        # http
+        vector = {'url': "https://127.0.0.1/", "headers": {"Host": "127.0.0.1"}}
+        url = "http://example.com"
+        test = reader._change_hostname(vector, url)
+        assert vector['url'] == "http://example.com/"
+
+        # https
+        vector = {'url': "http://127.0.0.1/", "headers": {"Host": "127.0.0.1"}}
+        url = "https://example.com"
+        test = reader._change_hostname(vector, url)
+        assert vector['url'] == "https://example.com/"
+
+        # https with port
+        vector = {'url': "http://127.0.0.1/", "headers": {"Host": "127.0.0.1"}}
+        url = "https://example.com:80"
+        test = reader._change_hostname(vector, url)
+        assert vector['url'] == "https://example.com:80/"
+
     def test_check_domain_positive(self, reader):
         # within domain exact
         url = {'url': "http://www.example.com/"}
@@ -634,7 +665,7 @@ class TestVectorReader:
 
     def test_parse_requests_positive(self, reader, requests, vectors):
         configs = {'cookies': {}, 'headers': {}, 'parameters': {}, 'value': "avascan",
-                   'excludes': ["/admin"], 'domain': ".example.com", 'agent': ""}
+                'excludes': ["/admin"], 'domain': ".example.com", 'agent': "", 'url': ""}
 
         # multiple requests
         test = reader._parse_requests(requests, configs, "file.har")
@@ -652,7 +683,7 @@ class TestVectorReader:
 
     def test_parse_requests_negative(self, reader, requests, vectors):
         configs = {'cookies': {}, 'headers': {}, 'parameters': {}, 'value': "avascan",
-                   'excludes': [], 'domain': "", 'agent': ""}
+                'excludes': [], 'domain': "", 'agent': "", 'url': "127.0.0.1"}
 
         # missing method
         requests[0]['method'] = ""
