@@ -93,6 +93,7 @@ class ArgumentReader:
         parser.add_argument('-t', '--threads', help="number of threads", type=int)
         parser.add_argument('-f', '--follow', help="follow http redirects", action='store_true')
         parser.add_argument('-r', '--reduce', help="reduce duplicate vectors", action='store_true')
+        parser.add_argument('-u', '--url', help="alternative url as 'hostname[:port]'")
         parser.add_argument('--summary', help="show scan summary", action='store_true')
 
         # parse args
