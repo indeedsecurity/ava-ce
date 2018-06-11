@@ -4,6 +4,7 @@ import socket
 import inspect
 from copy import copy
 from urllib.parse import urlparse
+from ava.common import utility
 from ava.common.exception import InvalidValueException, UnknownKeyException
 
 # configure logging
@@ -15,6 +16,8 @@ defaults = {
     'actives': [],
     'blinds': {},
     'passives': [],
+    'set_payloads': {},
+    'add_payloads': {},
     'report': "",
     'cookies': {},
     'headers': {},
@@ -166,6 +169,7 @@ def _check_proxy(proxy):
 
     return proxy
 
+
 def _check_alternative_url(alternative):
     """
     Checks the url is in {http|https}://hostname[:port] format or hostname[:port]. InvalidValueException is raised, if it is not
@@ -187,6 +191,26 @@ def _check_alternative_url(alternative):
         raise InvalidValueException("URL must be in {http|https}://hostname[:port] format or hostname[:port]")
 
     return alternative
+
+
+def _check_keys(values):
+    """
+    Checks the keys are defined in check classes. InvalidValueException is raised, if a key is not defined.
+    :param values: dictionary of payloads with keys
+    :return: dictionary of payloads with keys
+    """
+    # get keys
+    keys = []
+    for clazz in utility.get_package_classes('actives'):
+        keys.append(clazz.key)
+    for clazz in utility.get_package_classes('blinds'):
+        keys.append(clazz.key)
+
+    # verify each key exists
+    for key in values:
+        if key not in keys:
+            raise InvalidValueException("Check key '{}' not found".format(key))
+    return values
 
 
 def generate(sys_args, yaml_args):
@@ -222,6 +246,9 @@ def generate(sys_args, yaml_args):
         # modules and urls
         elif key == 'blinds':
             configs[key] = _check_modules_and_urls(key, values)
+        # payloads
+        elif key in ['set_payloads', 'add_payloads']:
+            configs[key] = _check_keys(values)
         # dictionaries
         elif key in ['cookies', 'headers', 'parameters']:
             configs[key] = _check_dict(values)

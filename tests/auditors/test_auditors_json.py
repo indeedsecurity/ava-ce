@@ -4,7 +4,7 @@ from copy import copy
 from ava.actives.sql_injection import SqlInjectionCheck, SqlInjectionDifferentialCheck, SqlInjectionTimingCheck
 from ava.auditors.json import _JsonValueHandler, _JsonDifferentialHandler, _JsonTimingHandler, _JsonBlindHandler
 from ava.auditors.json import JsonAuditor
-from ava.blinds.xss import CrossSiteScriptingBlindCheck
+from ava.blinds.xss import CrossSiteScriptingBlindDirectCheck
 
 
 @pytest.fixture
@@ -169,7 +169,7 @@ class TestJsonBlindHandler:
     def test_generate_variations(self, handler, vector):
         generated = []
 
-        check = CrossSiteScriptingBlindCheck("http://localhost:8080/")
+        check = CrossSiteScriptingBlindDirectCheck("http://localhost:8080/")
 
         for payload in check.payloads(vector['url'], "ava", "avascan"):
             variation = copy(vector)

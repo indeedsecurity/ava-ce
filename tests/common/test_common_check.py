@@ -27,6 +27,22 @@ class TestBlindCheck:
         test = check.payloads("", "", "")
         assert test == []
 
+    def test_check_payloads(self, check):
+        payloads = ["payload1", "payload2"]
+        assert payloads == check._check_payloads(payloads)
+
+    def test_set_payloads(self, check):
+        payloads = ["payload1", "payload2"]
+        check.set_payloads(payloads)
+        assert payloads == check._payloads
+
+    def test_add_payloads(self, check):
+        payloads = ["payload1", "payload2"]
+        check._payloads = ["payload3"]
+        correct = payloads + check._payloads
+        check.add_payloads(payloads)
+        assert sorted(check._payloads) == sorted(correct)
+
 
 class TestPassiveCheck:
     
@@ -49,6 +65,10 @@ class TestActiveCheck:
     def test_check(self, check):
         test = check.payloads("", "", "")
         assert test == []
+
+    def test_check_payloads(self, check):
+        payloads = ["payload1", "payload2"]
+        assert payloads == check._check_payloads(payloads)
 
 
 class TestValueCheck:
@@ -177,3 +197,8 @@ class TestTimingCheck:
 
         test = check.check({'original': original_response, 'timing': timing_response}, '', 9.00)
         assert not test
+
+    def test_check_payloads(self, check):
+        payloads = ["__import__('time').sleep(9)"]
+        test = check._check_payloads(payloads)
+        assert test == [(payloads[0], 9)]

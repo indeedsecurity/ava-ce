@@ -1,6 +1,8 @@
 import pytest
+import re
 from ava.actives.xss import CrossSiteScriptingCheck, CrossSiteScriptingLinkCheck, CrossSiteScriptingScriptSrcCheck
 from ava.actives.xss import CrossSiteScriptingScriptCheck, CrossSiteScriptingEventCheck
+from ava.common.exception import InvalidFormatException
 
 
 @pytest.fixture
@@ -79,6 +81,15 @@ class TestCrossSiteScriptingCheck:
         test = check.check(response, check._payloads[0])
         assert not test
 
+    def test_check_payloads_positive(self, check):
+        payloads = ["<{}></{}>"]
+        assert re.match(r"^<\w*></\w*>$", check._check_payloads(payloads)[0])
+
+    def test_check_payloads_negative(self, check):
+        payloads = ["Invalid payload"]
+        with pytest.raises(InvalidFormatException):
+            check._check_payloads(payloads)
+
 
 class TestCrossSiteScriptingLinkCheck:
     payloads = [
@@ -133,6 +144,16 @@ class TestCrossSiteScriptingLinkCheck:
         response.headers['Content-Type'] = "text/plain"
         test = check.check(response, check._payloads[0])
         assert not test
+
+    def test_check_payloads_positive(self, check):
+        # positive
+        payloads = ["{}()"]
+        assert re.match(r"^\w*\(\)$", check._check_payloads(payloads)[0])
+
+    def test_check_payloads_negative(self, check):
+        payloads = ["Invalid payload"]
+        with pytest.raises(InvalidFormatException):
+            check._check_payloads(payloads)
 
 
 class TestCrossSiteScriptingScriptSrcCheck:
@@ -202,6 +223,14 @@ class TestCrossSiteScriptingScriptSrcCheck:
         test = check.check(response, check._payloads[0])
         assert not test
 
+    def test_check_payloads_positive(self, check):
+        payloads = ["http://www.{}.com"]
+        assert re.match(r"^http://www.\w*.com$", check._check_payloads(payloads)[0])
+
+    def test_check_payloads_negative(self, check):
+        payloads = ["Invalid payload"]
+        with pytest.raises(InvalidFormatException):
+            check._check_payloads(payloads)
 
 class TestCrossSiteScriptingScriptCheck:
     payloads = [

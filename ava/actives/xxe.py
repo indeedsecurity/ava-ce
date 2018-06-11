@@ -2,6 +2,7 @@ import re
 import string
 from ava.common import utility
 from ava.common.check import _ValueCheck
+from ava.common.exception import InvalidFormatException
 
 
 # metadata
@@ -17,6 +18,7 @@ class XmlExternalEntityCheck(_ValueCheck):
     key = "xxe.value.file"
     name = "XML External Entity"
     description = "checks for xml external entity by accessing local files"
+    example = '<?xml version="1.0"?><!DOCTYPE {} [<!ENTITY {} SYSTEM "file:///etc/group">]><{}>&{};</{}>'
 
     def __init__(self):
         """Define static payloads"""
@@ -79,3 +81,16 @@ class XmlExternalEntityCheck(_ValueCheck):
             return True
         else:
             return False
+
+    def _check_payloads(self, payloads):
+        """
+        Checks if the payloads are adoptable for this class and modify the payloads to adjust to check function.
+        InvalidFormatException is raised, if a payload is not adoptable.
+        Children can override.
+        :param payloads: list of payloads
+        :return: list of modified payloads
+        """
+        for i, payload in enumerate(payloads):
+            if '/etc/group' not in payload:
+                raise InvalidFormatException("Payload of {} must include '/etc/group'".format(self.key))
+        return payloads

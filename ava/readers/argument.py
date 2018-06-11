@@ -4,7 +4,7 @@ from argparse import HelpFormatter
 
 class _ArgumentHelpFormatter(HelpFormatter):
 
-    def __init__(self, prog, indent_increment=2, max_help_position=30, width=None):
+    def __init__(self, prog, indent_increment=2, max_help_position=35, width=90):
         """Call parent with increased max_help_position"""
         super().__init__(prog, indent_increment=indent_increment, max_help_position=max_help_position, width=width)
 
@@ -46,7 +46,7 @@ class ArgumentReader:
 
     def dict(self, value):
         """
-        Converts a key=value string to a list. List will be combined into a dictionary.
+        Converts a key=value string to a list.
         :param value: string value
         :return: values as list
         """
@@ -77,6 +77,9 @@ class ArgumentReader:
         parser.add_argument('-e', '--actives', help="active checks as list", type=self.csv)
         parser.add_argument('--blinds', help="blind check as 'name=callback'", action='append', type=self.dict)
         parser.add_argument('--passives', help="passive checks as list", type=self.csv)
+        parser.add_argument('--set-payloads', help="set payloads as check=payload", type=self.dict, nargs='+')
+        parser.add_argument('--add-payloads', help="add payloads as check=payload", type=self.dict, nargs='+')
+        parser.add_argument('--show-examples', help="show examples of payloads", action='store_true')
         parser.add_argument('-o', '--report', help="json-formatted report file")
         parser.add_argument('--parameters', help="parameter as 'key=value'", action='append', type=self.dict)
         parser.add_argument('--cookies', help="cookie as 'key=value'", action='append', type=self.dict)
@@ -103,6 +106,18 @@ class ArgumentReader:
         for name in ["blinds", "cookies", "headers", "parameters"]:
             values = getattr(args, name)
             setattr(args, name, dict(values) if values else None)
+
+        # combine into list
+        for name in ["set_payloads", "add_payloads"]:
+            values = getattr(args, name)
+            if values is None:
+                continue
+            combined = {}
+            for key, value in values:
+                if key not in combined:
+                    combined[key] = []
+                combined[key].append(value)
+            setattr(args, name, combined)
 
         # convert
         return vars(args)
