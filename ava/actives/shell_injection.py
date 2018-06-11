@@ -14,7 +14,7 @@ class ShellInjectionCheck(_ValueCheck):
     """
     key = "shell.value.command"
     name = "Shell Injection"
-    description = "Checks for Shell Injection by executing commands"
+    description = "checks for shell injection by executing commands"
 
     def __init__(self):
         """Define static payloads"""
@@ -66,7 +66,7 @@ class ShellInjectionTimingCheck(_TimingCheck):
     """
     key = "shell.timing.sleep"
     name = "Shell Injection Timing"
-    description = "Checks for Shell Injection by executing delays"
+    description = "checks for shell injection by executing delays"
 
     def __init__(self):
         """Define static payloads"""

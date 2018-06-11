@@ -22,7 +22,7 @@ class OpenRedirectCheck(_ValueCheck):
     """
     key = "redirect.value.location"
     name = "Open Redirect"
-    description = "Checks for Open Redirects in the 'Location' header"
+    description = "checks for open redirects in the 'Location' header"
 
     def __init__(self):
         """Define static payloads"""
@@ -107,7 +107,7 @@ class OpenRedirectHtmlCheck(OpenRedirectCheck):
     """
     key = "redirect.value.href"
     name = "Open Redirect HTML Links"
-    description = "Checks for Open Redirects in 'href' attributes of '<a>' tags"
+    description = "checks for open redirects in 'href' attributes of '<a>' tags"
 
     def check(self, response, payload):
         """
@@ -141,7 +141,7 @@ class OpenRedirectScriptCheck(OpenRedirectCheck):
     """
     key = "redirect.value.script"
     name = "Open Redirect HTML Scripts"
-    description = "Checks for Open Redirects in 'window.location' statements of script tags"
+    description = "checks for open redirects in 'window.location' statements of script tags"
 
     def check(self, response, payload):
         """

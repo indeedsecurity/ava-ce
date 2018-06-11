@@ -17,7 +17,7 @@ class CrossSiteScriptingCheck(_ValueCheck):
     """
     key = "xss.value.tag"
     name = "Cross-Site Scripting"
-    description = "Checks for Cross-Site Scripting by injecting HTML tags"
+    description = "checks for cross-Site scripting by injecting HTML tags"
 
     def __init__(self):
         """Define static payloads"""
@@ -75,7 +75,7 @@ class CrossSiteScriptingLinkCheck(_ValueCheck):
     """
     key = "xss.value.href"
     name = "Cross-Site Scripting HTML Links"
-    description = "Checks for Cross-Site Scripting in 'href' attributes of '<a>' tags"
+    description = "checks for cross-site scripting in 'href' attributes of '<a>' tags"
 
     def __init__(self):
         """Define static payload"""
@@ -118,7 +118,7 @@ class CrossSiteScriptingScriptSrcCheck(_ValueCheck):
     """
     key = "xss.value.src"
     name = "Cross-Site Scripting HTML Scripts Source"
-    description = "Checks for Cross-Site Scripting in 'src' attributes of '<script>' tags"
+    description = "checks for cross-site scripting in 'src' attributes of '<script>' tags"
 
     def __init__(self):
         """Define static payload"""
@@ -179,7 +179,7 @@ class CrossSiteScriptingScriptCheck(_ValueCheck):
     """
     key = "xss.value.script"
     name = "Cross-Site Scripting HTML Scripts"
-    description = "Checks for Cross-Site Scripting in HTML <script> tags"
+    description = "checks for cross-site scripting in HTML <script> tags"
 
     def __init__(self):
         """Define static payloads"""
@@ -238,7 +238,7 @@ class CrossSiteScriptingEventCheck(CrossSiteScriptingScriptCheck):
     """
     key = "xss.value.event"
     name = "Cross-Site Scripting HTML Events"
-    description = "Checks for Cross-Site Scripting in HTML event attributes"
+    description = "checks for cross-site scripting in HTML event attributes"
 
     def check(self, response, payload):
         """

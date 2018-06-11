@@ -17,7 +17,7 @@ class PythonCodeInjectionTimingCheck(_TimingCheck):
     """
     key = "code.timing.python"
     name = "Python Code Injection Timing"
-    description = "Checks for Python Code Injection by executing delays"
+    description = "checks for python code injection by executing delays"
 
     def __init__(self):
         """Define static payloads"""

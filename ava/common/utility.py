@@ -95,12 +95,31 @@ def get_package_classes(package, includes=None):
     # convert package name
     package = "ava." + package
 
+    # get child classes
+    if includes:
+        # add modules from package directory
+        home = os.path.realpath(os.path.join(__file__, '..', '..', '..'))
+        directory = os.path.join(home, package.replace('.', os.sep))
+        for name in os.listdir(directory):
+            if name.endswith(".py") and name != "__init__.py":
+                mod = package + '.' + name[:-3]
+                modules.add(mod)
+
+        # import classes which are defined within module and have keys in includes
+        for mod in modules:
+            imported = __import__(mod, fromlist=[package])
+            for name, clazz in inspect.getmembers(imported, inspect.isclass):
+                if clazz.__module__ == mod and not name.startswith('_') and clazz.key in includes:
+                    classes.add(clazz)
+
+    modules = set()
+
     # get list of modules
     if includes:
         # add modules from includes
-        mods = [package + '.' + name for name in includes]
+        mods = [package + '.' + name for name in includes if '.' not in name]
         modules.update(mods)
-    else:
+    elif len(classes) == 0:
         # add modules from package directory
         home = os.path.realpath(os.path.join(__file__, '..', '..', '..'))
         directory = os.path.join(home, package.replace('.', os.sep))
@@ -126,23 +145,21 @@ def get_package_info(package):
     :return: list of module name/description as tuple
     """
     modules = set()
-    info = []
+    info = {}
 
     # load classes for package
     classes = get_package_classes(package)
 
-    # get modules from imports
+    # get module names, descriptions, class keys and description
     for clazz in classes:
-        mod = sys.modules[clazz.__module__]
-        modules.add(mod)
+        name = clazz.__module__.split('.')[-1]
+        if name not in info:
+            module = sys.modules[clazz.__module__]
+            description = module.description
+            info[name] = (description, [])
+        info[name][1].append((clazz.key, clazz.description))
 
-    # get names and descriptions
-    for mod in modules:
-        name = mod.name.split('.')
-        description = mod.description
-        info.append((name[-1], description))
-
-    return sorted(info)
+    return sorted(map(lambda x: (x[0],) + x[1], info.items()))
 
 
 def parse_cookie(cookie):

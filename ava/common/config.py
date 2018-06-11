@@ -1,7 +1,7 @@
 import logging
 import os
 import socket
-import re
+import inspect
 from copy import copy
 from urllib.parse import urlparse
 from ava.common.exception import InvalidValueException, UnknownKeyException
@@ -44,17 +44,27 @@ def _check_modules(package, modules):
     :param modules: list of modules
     :return: list of modules
     """
-    # get package contents
-    home = os.path.realpath(os.path.join(__file__, '..', '..', '..'))
-    contents = os.listdir(os.path.join(home, "ava", package))
+    # convert package name
+    package = "ava." + package
 
-    # filter by modules
-    contents = [name for name in contents if name.endswith(".py") and name != "__init__.py"]
+    # get package contents and class keys
+    home = os.path.realpath(os.path.join(__file__, '..', '..', '..'))
+    directory = os.path.join(home, package.replace('.', os.sep))
+    contents = []
+    keys = []
+    for name in os.listdir(directory):
+        if name.endswith(".py") and name != "__init__.py":
+            contents.append(name)
+            mod = package + '.' + name[:-3]
+            imported = __import__(mod, fromlist=[package])
+            for name, clazz in inspect.getmembers(imported, inspect.isclass):
+                if clazz.__module__ == mod and not name.startswith('_'):
+                    keys.append(clazz.key)
 
     # verify each module exists
     for mod in modules:
-        if mod + ".py" not in contents:
-            raise InvalidValueException("Module '{}' not found".format(package + '.' + mod))
+        if mod + ".py" not in contents and mod not in keys:
+            raise InvalidValueException("Module '{}' and check class '{}' not found".format(package + '.' + mod, mod))
 
     return modules
 

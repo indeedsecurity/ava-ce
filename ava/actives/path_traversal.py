@@ -13,7 +13,7 @@ class PathTraversalCheck(_ValueCheck):
     """
     key = "path.value.file"
     name = "Path Traversal"
-    description = "Checks for Path Traversal by accessing local files"
+    description = "checks for path traversal by accessing local files"
 
     def __init__(self):
         """Define static payloads"""

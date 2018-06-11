@@ -2,6 +2,7 @@ import pytest
 import string
 import requests
 from ava.common import utility
+from ava.actives.code_injection import PythonCodeInjectionTimingCheck
 from ava.actives.open_redirect import OpenRedirectCheck, OpenRedirectHtmlCheck, OpenRedirectScriptCheck
 from ava.auditors.parameter import QueryParameterAuditor, PostParameterAuditor
 from ava.common.exception import InvalidFormatException, UnknownKeyException
@@ -160,6 +161,14 @@ def test_get_package_classes(mocker):
     test = utility.get_package_classes("auditors", ["parameter"])
     assert test == set(auditors)
 
+    # get checks by key
+    test = utility.get_package_classes("actives", ["redirect.value.script"])
+    assert test == set([actives[2]])
+
+    # list
+    test = utility.get_package_classes("actives", ["open_redirect", "code.timing.python"])
+    assert test == set(actives + [PythonCodeInjectionTimingCheck])
+
     # checks listdir
     mocker.patch("os.listdir", return_value=["__init__.py", "open_redirect.py"])
     test = utility.get_package_classes("actives", [])
@@ -173,14 +182,16 @@ def test_get_package_classes(mocker):
 
 def test_get_package_info(mocker):
     # checks
-    mocker.patch("ava.common.utility.get_package_classes", return_value=[OpenRedirectCheck])
+    mocker.patch("ava.common.utility.get_package_classes", return_value=[PythonCodeInjectionTimingCheck])
     test = utility.get_package_info("actives")
-    assert test == [("open_redirect", "checks for open redirects")]
+    classes = [("code.timing.python", "checks for python code injection by executing delays")]
+    assert test == [("code_injection", "checks for code injection", classes)]
 
     # auditors
     mocker.patch("ava.common.utility.get_package_classes", return_value=[QueryParameterAuditor])
     test = utility.get_package_info("auditors")
-    assert test == [("parameter", "audits each parameter")]
+    classes = [("parameter.query", "Audits by replacing and appending payloads to each query string parameter")]
+    assert test == [("parameter", "audits each parameter", classes)]
 
 
 def test_parse_cookie(simples, complexes):
