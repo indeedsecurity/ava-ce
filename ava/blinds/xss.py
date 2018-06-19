@@ -1,5 +1,6 @@
 import base64
 from ava.common.check import _BlindCheck
+from ava.common.exception import InvalidFormatException
 
 # metadata
 name = __name__
@@ -43,6 +44,8 @@ class CrossSiteScriptingBlindDirectCheck(_BlindCheck):
         :return: list of modified payloads
         """
         for i, payload in enumerate(payloads):
+            if '{}' not in payload:
+                raise InvalidFormatException("Payload of {} must include '{{}}'".format(self.key))
             payloads[i] = payload.format(self._listener)
         return payloads
 
@@ -104,5 +107,7 @@ class CrossSiteScriptingBlindDynamicCheck(_BlindCheck):
 
         # generate payloads
         for i, payload in enumerate(payloads):
+            if '{}' not in payload:
+                raise InvalidFormatException("Payload of {} must include '{{}}'".format(self.key))
             payloads[i] = payload.format(script)
         return payloads
