@@ -4,6 +4,7 @@ import os
 import random
 import sys
 import urllib3
+import string
 from urllib import parse
 from ava.common.constant import HTTP
 from ava.common.exception import InvalidFormatException, UnknownKeyException
@@ -335,3 +336,33 @@ def send_http_request(session, vector, configs):
             response.history = history
 
     return response
+
+def replace_with_unicode(data, charset=string.printable):
+    """
+    Replace ascii with unicode. This encoding enables payloads to bypass checks such as black lists of urls.
+    :param data: string
+    :param charset: charset which should be replaced
+    :return: unicoded string
+    """
+
+    encode = {}
+    for c in string.printable:
+        encode[c] = c
+
+    # numbers
+    encode['0'] = '\u24EA'
+    for i in range(1, 10):
+        encode[chr(ord('0') + i)] = chr(0x245f + i)
+
+    # upper letters
+    for i in range(26):
+        encode[chr(ord('A') + i)] = chr(0x24B6 + i)
+
+    # lower letters
+    for i in range(26):
+        encode[chr(ord('a') + i)] = chr(0x24D0 + i)
+
+    # dot
+    encode['.'] = '｡'
+
+    return ''.join([encode[c] if c in charset else c for c in data])

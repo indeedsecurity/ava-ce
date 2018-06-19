@@ -454,3 +454,17 @@ def test_send_http_requests_follow(vector, mocker, response):
     test = utility.send_http_request(session, vector, configs)
     assert test == non_redirect
     assert test.history == [redirect]
+
+
+def test_replace_with_unicode():
+    # digits and dots
+    test = utility.replace_with_unicode("127.0.0.1")
+    assert test == "①②⑦｡⓪｡⓪｡①"
+
+    # letters
+    test = utility.replace_with_unicode("localhost")
+    assert test == "ⓛⓞⓒⓐⓛⓗⓞⓢⓣ"
+
+    # only digits
+    test = utility.replace_with_unicode("127.0.0.1", charset=string.digits)
+    assert test == "①②⑦.⓪.⓪.①"
