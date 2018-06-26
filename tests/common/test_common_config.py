@@ -195,12 +195,33 @@ def test_check_alternative_url_negative():
         config._check_alternative_url("ftp://127.0.0.1")
 
 
+def test_check_keys_positive():
+    # actives
+    values = {'xss.value.tag': ["payload"]}
+    test = config._check_keys(values)
+    assert test == values
+
+    # blinds
+    values = {'xss.blind.direct': ["payload"]}
+    test = config._check_keys(values)
+    assert test == values
+
+
+def test_check_keys_negative():
+    # non-existent key
+    values = {'non.existent.key': ["payload"]}
+    with pytest.raises(InvalidValueException):
+        config._check_keys(values)
+
+
 def test_generate_positive():
     users = {
         'auditors': ["parameter", "cookie"],
         'actives': ["xss", "open_redirect"],
         'blinds': {'xss': "http://localhost/"},
         'passives': ["pii"],
+        'set_payloads': {'xss.value.tag': "value"},
+        'add_payloads': {'xss.blind.direct': "value"},
         'report': "report.json",
         'cookies': {'key': "value"},
         'headers': {'key': "value"},
@@ -227,6 +248,8 @@ def test_generate_positive():
         'actives': ["xss", "open_redirect"],
         'blinds': {'xss': "http://localhost/"},
         'passives': ["pii"],
+        'set_payloads': {'xss.value.tag': "value"},
+        'add_payloads': {'xss.blind.direct': "value"},
         'report': "report.json",
         'cookies': {'key': "value"},
         'headers': {'key': "value"},

@@ -1,12 +1,14 @@
 import pytest
 import logging
 import sys
+import re
+import base64
 import ava.scanner
 import ava.common.config
 import ava.common.utility
 from copy import copy
-from ava.actives.xss import CrossSiteScriptingCheck
-from ava.blinds.xss import CrossSiteScriptingBlindCheck
+from ava.actives.xss import CrossSiteScriptingCheck, CrossSiteScriptingLinkCheck, CrossSiteScriptingScriptCheck
+from ava.blinds.xss import CrossSiteScriptingBlindDirectCheck
 from ava.passives.pii import PersonallyIdentifiableInformationCheck
 from ava.common.exception import InvalidValueException, UnknownKeyException, InvalidFormatException
 from ava.common.exception import MissingComponentException
@@ -151,10 +153,16 @@ def test_load_checks(mocker):
     assert isinstance(test[0], PersonallyIdentifiableInformationCheck)
 
     # blinds
-    mocker.patch("ava.common.utility.get_package_classes", return_value=[CrossSiteScriptingBlindCheck])
+    mocker.patch("ava.common.utility.get_package_classes", return_value=[CrossSiteScriptingBlindDirectCheck])
     configs = {'actives': None, 'passives': None, 'blinds': {'xss': "http://localhost:8080/"}}
     test = ava.scanner._load_checks(configs)
-    assert isinstance(test[0], CrossSiteScriptingBlindCheck)
+    assert isinstance(test[0], CrossSiteScriptingBlindDirectCheck)
+
+    # blinds with key
+    mocker.patch("ava.common.utility.get_package_classes", return_value=[CrossSiteScriptingBlindDirectCheck])
+    configs = {'actives': None, 'passives': None, 'blinds': {'xss.blind.direct': "http://localhost:8080/"}}
+    test = ava.scanner._load_checks(configs)
+    assert isinstance(test[0], CrossSiteScriptingBlindDirectCheck)
 
     # no checks
     configs = {'actives': None, 'passives': None, 'blinds': None}
@@ -162,11 +170,55 @@ def test_load_checks(mocker):
     assert test == []
 
 
+def test_modify_payloads_positive():
+    # set payloads actives
+    checks = [CrossSiteScriptingCheck()]
+    values = {'xss.value.tag': ["test<{}></{}>"]}
+    test = ava.scanner._modify_payloads(checks, values, True)
+    assert re.match(r"^test<\w*></\w*>$", test[0]._payloads[0])
+
+    # add payloads
+    checks = [CrossSiteScriptingCheck()]
+    values = {'xss.value.tag': ["test<{}></{}>"]}
+    test = ava.scanner._modify_payloads(checks, values, False)
+    found = False
+    for payload in test[0]._payloads:
+        found |= re.match(r"^test<\w*></\w*>$", payload) is not None
+    assert found
+
+    # set payloads blinds
+    checks = [CrossSiteScriptingBlindDirectCheck("http://localhost:8080/")]
+    values = {'xss.blind.direct': ["<img src='{}'>"]}
+    test = ava.scanner._modify_payloads(checks, values, True)
+    assert test[0]._payloads == ["<img src='http://localhost:8080/'>"]
+
+    # add payloads blinds
+    checks = [CrossSiteScriptingBlindDirectCheck("http://localhost:8080/")]
+    values = {'xss.blind.dynamic': ["<script>{}</script>"]}
+    correct = checks[0]._payloads
+    template = "s=document.createElement('script');s.src=atob('{}');document.head.appendChild(s);"
+    encoded = base64.b64encode("http://localhost:8080/".encode()).decode()
+    script = template.format(encoded)
+    correct.append("<script>{}</script>".format(script))
+    test = ava.scanner._modify_payloads(checks, values, False)
+    assert test[0]._payloads == correct
+
+
+def test_modify_payloads_negative():
+    # set payloads to one check
+    checks = [CrossSiteScriptingLinkCheck(), CrossSiteScriptingScriptCheck()]
+    values = {'xss.value.href': ["test');{}();//"]}
+    test = ava.scanner._modify_payloads(checks, values, True)
+    for payload in test[1]._payloads:
+        assert re.match(r"^test'\);\w*\(\);//$", payload) is None
+
+
 def test_run_scanner_positive(mocker):
     configs = {"hars": ["test.har"],
                "report": None,
                "auditors": [],
                "actives": [], "blinds": {}, "passives": [],
+               "set_payloads": {}, "add_payloads": {},
                "reduce": False, "summary": False}
     vector = {
         "url": "http://www.avascan.com/",
@@ -204,6 +256,7 @@ def test_run_scanner_negative(mocker):
                "report": None,
                "auditors": [],
                "actives": [], "blinds": {}, "passives": [],
+               "set_payloads": {}, "add_payloads": {},
                "reduce": True, "summary": False}
 
     # empty vectors
@@ -223,6 +276,11 @@ def test_main_positive(mocker):
     mocker.patch("os.path.isfile", return_value=True)
     mocker.patch("ava.common.config.generate")
     mocker.patch("ava.scanner._run_scanner")
+    test = ava.scanner.main(args)
+    assert test == 0
+
+    # show examples
+    args = ["--show-examples"]
     test = ava.scanner.main(args)
     assert test == 0
 

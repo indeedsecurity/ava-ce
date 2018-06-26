@@ -1,6 +1,7 @@
 import re
 
 from ava.common.check import _ValueCheck
+from ava.common.exception import InvalidFormatException
 
 # metadata
 name = __name__
@@ -14,6 +15,7 @@ class PathTraversalCheck(_ValueCheck):
     key = "path.value.file"
     name = "Path Traversal"
     description = "checks for path traversal by accessing local files"
+    example = "../etc/group"
 
     def __init__(self):
         """Define static payloads"""
@@ -49,3 +51,16 @@ class PathTraversalCheck(_ValueCheck):
             return True
         else:
             return False
+
+    def _check_payloads(self, payloads):
+        """
+        Checks if the payloads are adoptable for this class and modify the payloads to adjust to check function.
+        InvalidFormatException is raised, if a payload is not adoptable.
+        Children can override.
+        :param payloads: list of payloads
+        :return: list of modified payloads
+        """
+        for i, payload in enumerate(payloads):
+            if 'etc/group' not in payload:
+                raise InvalidFormatException("Payload of {} must include 'etc/group' as a part of path".format(self.key))
+        return payloads

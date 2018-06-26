@@ -1,5 +1,6 @@
 import pytest
 from ava.actives.shell_injection import ShellInjectionCheck, ShellInjectionTimingCheck
+from ava.common.exception import InvalidFormatException
 
 
 @pytest.fixture
@@ -56,6 +57,16 @@ class TestShellInjectionCheck:
         test = check.check(response, check._payloads[0])
         assert not test
 
+    def test_check_payloads_positive(self, check):
+        # positive
+        payloads = ["; id #"]
+        assert payloads == check._check_payloads(payloads)
+
+    def test_check_payloads_negative(self, check):
+        # negative
+        payloads = ["; ls #"]
+        with pytest.raises(InvalidFormatException):
+            check._check_payloads(payloads)
 
 class TestShellInjectionTimingCheck:
     payloads = [

@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 from ava.common import utility
 from ava.common.check import _ValueCheck
 from ava.common.constant import HTTP
+from ava.common.exception import InvalidFormatException
 
 # ignore URL warnings from BeautifulSoup
 warnings.filterwarnings("ignore", category=UserWarning, module="bs4")
@@ -23,6 +24,7 @@ class OpenRedirectCheck(_ValueCheck):
     key = "redirect.value.location"
     name = "Open Redirect"
     description = "checks for open redirects in the 'Location' header"
+    example = "http://www.{}.com"
 
     def __init__(self):
         """Define static payloads"""
@@ -98,6 +100,20 @@ class OpenRedirectCheck(_ValueCheck):
             return True
         else:
             return False
+
+    def _check_payloads(self, payloads):
+        """
+        Checks if the payloads are adoptable for this class and modify the payloads to adjust to check function.
+        InvalidFormatException is raised, if a payload is not adoptable.
+        Children can override.
+        :param payloads: list of payloads
+        :return: list of modified payloads
+        """
+        for i, payload in enumerate(payloads):
+            if 'www.{}.com' not in payload:
+                raise InvalidFormatException("Payload of {} must include 'www.{{}}.com'".format(self.key))
+            payloads[i] = payload.format(self._random)
+        return payloads
 
 
 class OpenRedirectHtmlCheck(OpenRedirectCheck):

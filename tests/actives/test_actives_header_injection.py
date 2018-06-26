@@ -1,5 +1,7 @@
 import pytest
+import re
 from ava.actives.header_injection import HeaderInjectionCheck
+from ava.common.exception import InvalidFormatException
 
 
 @pytest.fixture
@@ -40,3 +42,14 @@ class TestHeaderInjectionCheck:
         response.cookies = {}
         test = check.check(response, check._payloads[0])
         assert not test
+
+    def test_check_payloads_positive(self, check):
+        # positive
+        payloads = ["Set-Cookie: {}={}"]
+        assert re.match(r"^Set-Cookie: \w*=\w*$", check._check_payloads(payloads)[0])
+
+    def test_check_payloads_negative(self, check):
+        # negative
+        payloads = ["Invalid payload"]
+        with pytest.raises(InvalidFormatException):
+            check._check_payloads(payloads)

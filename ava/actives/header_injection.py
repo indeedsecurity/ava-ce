@@ -1,6 +1,7 @@
 import string
 from ava.common import utility
 from ava.common.check import _ValueCheck
+from ava.common.exception import InvalidFormatException
 
 
 # metadata
@@ -16,6 +17,7 @@ class HeaderInjectionCheck(_ValueCheck):
     key = "header.value.cookie"
     name = "Header Injection"
     description = "checks for header injection in response headers"
+    example = "\\r\\nSet-Cookie: {}={}"
 
     def __init__(self):
         """Define static payloads"""
@@ -46,3 +48,17 @@ class HeaderInjectionCheck(_ValueCheck):
             return True
         else:
             return False
+
+    def _check_payloads(self, payloads):
+        """
+        Checks if the payloads are adoptable for this class and modify the payloads to ajust to check function.
+        InvalidFormatException is raised, if a payload is not adoptable.
+        Children can override.
+        :param payloads: list of payloads
+        :return: list of modified payloads
+        """
+        for i, payload in enumerate(payloads):
+            if '{}={}' not in payload:
+                raise InvalidFormatException("Payload of {} must include '{{}}={{}}'".format(self.key))
+            payloads[i] = payload.format(self._random, self._random)
+        return payloads

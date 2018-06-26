@@ -17,6 +17,7 @@ class _BlindCheck(_Check):
     internal system. These checks do not raise issues directly. The listener server maintains issue information.
     """
     _payloads = []  # attribute should be populated by children's __init___ method
+    example = "Payload example"
 
     def payloads(self, url, target, value):
         """
@@ -28,6 +29,30 @@ class _BlindCheck(_Check):
         """
         # return
         return self._payloads
+
+    def _check_payloads(self, payloads):
+        """
+        Checks if the payloads are adoptable for this class and modify the payloads to adjust to check function.
+        InvalidFormatException is raised, if a payload is not adoptable.
+        Children can override.
+        :param payloads: list of payloads
+        :return: list of modified payloads
+        """
+        return payloads
+
+    def set_payloads(self, payloads):
+        """
+        Overwrite the check's payloads.
+        :param payloads: list of payloads
+        """
+        self._payloads = self._check_payloads(payloads)
+
+    def add_payloads(self, payloads):
+        """
+        Add payloads to the check's payloads.
+        :param payloads: list of payloads
+        """
+        self._payloads += self._check_payloads(payloads)
 
 
 class _PassiveCheck(_Check):
@@ -45,6 +70,7 @@ class _ActiveCheck(_Check):
     Parent class for active checks. Subclasses include simple, differential, and timing checks.
     """
     _payloads = []  # attribute should be populated by children's __init___ method
+    example = "Payload example"
 
     def payloads(self, url, target, value):
         """
@@ -55,6 +81,30 @@ class _ActiveCheck(_Check):
         :return: list of payloads
         """
         return self._payloads
+
+    def _check_payloads(self, payloads):
+        """
+        Checks if the payloads are adoptable for this class and modify the payloads to adjust to check function.
+        InvalidFormatException is raised, if a payload is not adoptable.
+        Children can override.
+        :param payloads: list of payloads
+        :return: list of modified payloads
+        """
+        return payloads
+
+    def set_payloads(self, payloads):
+        """
+        Overwrite the check's payloads.
+        :param payloads: list of payloads
+        """
+        self._payloads = self._check_payloads(payloads)
+
+    def add_payloads(self, payloads):
+        """
+        Add payloads to the check's payloads.
+        :param payloads: list of payloads
+        """
+        self._payloads += self._check_payloads(payloads)
 
 
 class _ValueCheck(_ActiveCheck):
@@ -151,3 +201,13 @@ class _TimingCheck(_ActiveCheck):
             return True
         else:
             return False
+
+    def _check_payloads(self, payloads):
+        """
+        Checks if the payloads are adoptable for this class and modify the payloads to adjust to check function.
+        InvalidFormatException is raised, if a payload is not adoptable.
+        Children can override.
+        :param payloads: list of payloads
+        :return: list of modified payloads
+        """
+        return [(payload, 9) for payload in payloads]

@@ -78,6 +78,11 @@ class TestArgumentReader:
         test = reader.parse()
         assert sorted(test['actives']) == ["open_redirect", "xss"]
 
+        # payloads
+        reader = ArgumentReader(['--set-payloads', "xss=payload", "xss=payload2", "blind=payload3"])
+        test = reader.parse()
+        assert test['set_payloads'] == {'xss': ["payload", "payload2"], 'blind': ["payload3"]}
+
         # auditors
         reader = ArgumentReader(['-a', "parameters, cookies"])
         test = reader.parse()

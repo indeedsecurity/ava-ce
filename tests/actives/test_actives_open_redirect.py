@@ -1,5 +1,7 @@
 import pytest
+import re
 from ava.actives.open_redirect import OpenRedirectCheck, OpenRedirectHtmlCheck, OpenRedirectScriptCheck
+from ava.common.exception import InvalidFormatException
 
 
 @pytest.fixture
@@ -88,6 +90,17 @@ class TestOpenRedirectCheck:
         response.headers = {"Location": "http://www.notavanscan.com"}
         test = check.check(response, check._payloads[0])
         assert not test
+
+    def test_check_payloads_positive(self, check):
+        # positive
+        payloads = ["http://www.{}.com"]
+        assert re.match(r"^http://www.\w*.com$", check._check_payloads(payloads)[0])
+
+    def test_check_payloads_negative(self, check):
+        # negative
+        payloads = ["Invalid payload"]
+        with pytest.raises(InvalidFormatException):
+            check._check_payloads(payloads)
 
 
 class TestOpenRedirectHtmlCheck(TestOpenRedirectCheck):

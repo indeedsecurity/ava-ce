@@ -9,6 +9,7 @@ from ava.common import config
 from ava.common import utility
 from ava.common.exception import InvalidValueException, UnknownKeyException, InvalidFormatException
 from ava.common.exception import MissingComponentException
+from ava.common.check import _DifferentialCheck
 from ava.readers.argument import ArgumentReader
 from ava.readers.config import YamlReader
 from ava.readers.vector import HarReader
@@ -52,12 +53,29 @@ def _print_modules():
         print(package + ':')
         for name, description, classes in utility.get_package_info(package):
             print("  {:26s} {}".format(name, description))
-            if package == 'actives':
+            if package in ['actives', 'blinds']:
                 for key, desc in classes:
                     print("    {:24s} {}".format(key, desc))
                 print('')
 
-        if package not in ['actives', 'passives']:
+        if package == packages[0]:
+            print('')
+
+
+def _print_examples():
+    """
+    Prints examples of payloads.
+    """
+    packages = ['actives', 'blinds']
+
+    print("'{}' will be replaced with random string, url or script\n")
+
+    for package in packages:
+        print(package + ':')
+        for clazz in sorted(utility.get_package_classes(package), key=lambda cls: cls.key):
+            if not issubclass(clazz, _DifferentialCheck):
+                print("  {:26s} {}".format(clazz.key, clazz.example))
+        if package != packages[-1]:
             print('')
 
 
@@ -148,7 +166,11 @@ def _load_checks(configs):
         logger.debug("Loading blind checks.")
         listeners = configs['blinds']
         blinds = utility.get_package_classes('blinds', list(listeners))
-        checks += [clazz(listeners[clazz.__module__.split('.')[-1]]) for clazz in blinds]
+        for clazz in blinds:
+            if clazz.key in listeners:
+                checks.append(clazz(listeners[clazz.key]))
+            else:
+                checks.append(clazz(listeners[clazz.__module__.split('.')[-1]]))
 
     # passive checks
     if configs['passives']:
@@ -156,6 +178,24 @@ def _load_checks(configs):
         passives = utility.get_package_classes('passives', configs['passives'])
         checks += [clazz() for clazz in passives]
 
+    return checks
+
+
+def _modify_payloads(checks, values, clear):
+    """
+    Set or add payloads to checks.
+    :param checks: list of check instance
+    :param values: list of payloads with keys
+    :param clear: boolean flag if clearing the predefined payloads
+    :return: list of check instance
+    """
+    for key, payloads in values.items():
+        for check in checks:
+            if check.key == key:
+                if clear:
+                    check.set_payloads(payloads)
+                else:
+                    check.add_payloads(payloads)
     return checks
 
 
@@ -189,6 +229,9 @@ def _run_scanner(configs):
         logger.debug("No checks loaded. Loading all active checks.")
         actives = utility.get_package_classes('actives')
         checks += [clazz() for clazz in actives]
+
+    checks = _modify_payloads(checks, configs['set_payloads'], True)
+    checks = _modify_payloads(checks, configs['add_payloads'], False)
 
     # load and instantiate auditors
     logger.debug("Loading auditors.")
@@ -239,6 +282,10 @@ def main(args):
     # list modules
     if sys_args['list']:
         _print_modules()
+        return 0
+
+    if sys_args['show_examples']:
+        _print_examples()
         return 0
 
     try:

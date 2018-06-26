@@ -18,6 +18,7 @@ class PythonCodeInjectionTimingCheck(_TimingCheck):
     key = "code.timing.python"
     name = "Python Code Injection Timing"
     description = "checks for python code injection by executing delays"
+    example = "__import__('time').sleep(9)"
 
     def __init__(self):
         """Define static payloads"""

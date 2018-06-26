@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 from ava.common import utility
 from ava.common.check import _ValueCheck
 from ava.common.constant import HTTP
+from ava.common.exception import InvalidFormatException
 
 # metadata
 name = __name__
@@ -18,6 +19,7 @@ class CrossSiteScriptingCheck(_ValueCheck):
     key = "xss.value.tag"
     name = "Cross-Site Scripting"
     description = "checks for cross-Site scripting by injecting HTML tags"
+    example = "<{}></{}>"
 
     def __init__(self):
         """Define static payloads"""
@@ -67,6 +69,20 @@ class CrossSiteScriptingCheck(_ValueCheck):
         else:
             return False
 
+    def _check_payloads(self, payloads):
+        """
+        Checks if the payloads are adoptable for this class and modify the payloads to adjust to check function.
+        InvalidFormatException is raised, if a payload is not adoptable.
+        Children can override.
+        :param payloads: list of payloads
+        :return: list of modified payloads
+        """
+        for i, payload in enumerate(payloads):
+            if '<{}' not in payload:
+                raise InvalidFormatException("Payload of {} must have a tag named '{{}}'".format(self.key))
+            payloads[i] = payload.format(self._random, self._random)
+        return payloads
+
 
 class CrossSiteScriptingLinkCheck(_ValueCheck):
     """
@@ -76,6 +92,7 @@ class CrossSiteScriptingLinkCheck(_ValueCheck):
     key = "xss.value.href"
     name = "Cross-Site Scripting HTML Links"
     description = "checks for cross-site scripting in 'href' attributes of '<a>' tags"
+    example = "javascript:{}()"
 
     def __init__(self):
         """Define static payload"""
@@ -110,6 +127,20 @@ class CrossSiteScriptingLinkCheck(_ValueCheck):
         else:
             return False
 
+    def _check_payloads(self, payloads):
+        """
+        Checks if the payloads are adoptable for this class and modify the payloads to adjust to check function.
+        InvalidFormatException is raised, if a payload is not adoptable.
+        Children can override.
+        :param payloads: list of payloads
+        :return: list of modified payloads
+        """
+        for i, payload in enumerate(payloads):
+            if '{}()' not in payload:
+                raise InvalidFormatException("Payload of {} must have a function named '{{}}'".format(self.key))
+            payloads[i] = payload.format(self._random)
+        return payloads
+
 
 class CrossSiteScriptingScriptSrcCheck(_ValueCheck):
     """
@@ -119,6 +150,7 @@ class CrossSiteScriptingScriptSrcCheck(_ValueCheck):
     key = "xss.value.src"
     name = "Cross-Site Scripting HTML Scripts Source"
     description = "checks for cross-site scripting in 'src' attributes of '<script>' tags"
+    example = "//www.{}.com/{}.js"
 
     def __init__(self):
         """Define static payload"""
@@ -171,6 +203,20 @@ class CrossSiteScriptingScriptSrcCheck(_ValueCheck):
         else:
             return False
 
+    def _check_payloads(self, payloads):
+        """
+        Checks if the payloads are adoptable for this class and modify the payloads to adjust to check function.
+        InvalidFormatException is raised, if a payload is not adoptable.
+        Children can override.
+        :param payloads: list of payloads
+        :return: list of modified payloads
+        """
+        for i, payload in enumerate(payloads):
+            if 'www.{}.com' not in payload:
+                raise InvalidFormatException("Payload of {} must have address of 'www.{{}}.com'".format(self.key))
+            payloads[i] = payload.format(self._random)
+        return payloads
+
 
 class CrossSiteScriptingScriptCheck(_ValueCheck):
     """
@@ -180,6 +226,7 @@ class CrossSiteScriptingScriptCheck(_ValueCheck):
     key = "xss.value.script"
     name = "Cross-Site Scripting HTML Scripts"
     description = "checks for cross-site scripting in HTML <script> tags"
+    example = "'+{}()+'"
 
     def __init__(self):
         """Define static payloads"""

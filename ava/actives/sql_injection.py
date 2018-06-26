@@ -15,6 +15,7 @@ class SqlInjectionCheck(_ValueCheck):
     key = "sql.value.error"
     name = "SQL Injection"
     description = "checks for sql injection by causing syntax errors"
+    example = "'"
 
     def __init__(self):
         """Define static payloads"""
@@ -100,6 +101,7 @@ class SqlInjectionTimingCheck(_TimingCheck):
     key = "sql.timing.sleep"
     name = "SQL Injection Timing"
     description = "checks for sql injection by executing delays"
+    example = "' UNION SELECT SLEEP(9) -- "
 
     def __init__(self):
         """Define static payloads"""

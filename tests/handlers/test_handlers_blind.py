@@ -1,5 +1,5 @@
 import pytest
-from ava.blinds.xss import CrossSiteScriptingBlindCheck
+from ava.blinds.xss import CrossSiteScriptingBlindDirectCheck
 from ava.common.check import _BlindCheck
 from ava.handlers.blind import _BlindHandler
 
@@ -32,7 +32,7 @@ class TestBlindHandler:
         assert handler.handles == _BlindCheck
 
     def test_blind_execute_check_positive(self, handler, vector, response, mocker):
-        check = CrossSiteScriptingBlindCheck("http://localhost:8080/")
+        check = CrossSiteScriptingBlindDirectCheck("http://localhost:8080/")
         auditable = {'vector': vector, 'target': "param", 'payload': check._payloads[0], 'value': check._payloads[0]}
 
         # mock
@@ -46,7 +46,7 @@ class TestBlindHandler:
         assert test == []
 
     def test_execute_check_negative(self, handler, vector, mocker):
-        check = CrossSiteScriptingBlindCheck("http://localhost:8080/")
+        check = CrossSiteScriptingBlindDirectCheck("http://localhost:8080/")
         auditable = {'vector': vector}
 
         # no targets

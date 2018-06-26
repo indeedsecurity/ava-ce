@@ -9,7 +9,7 @@ from ava.auditors.parameter import _QueryParameterValueHandler, _QueryParameterD
 from ava.auditors.parameter import _QueryParameterTimingHandler, _QueryParameterBlindHandler
 from ava.auditors.parameter import _PostParameterValueHandler, _PostParameterDifferentialHandler
 from ava.auditors.parameter import _PostParameterTimingHandler, _PostParameterBlindHandler
-from ava.blinds.xss import CrossSiteScriptingBlindCheck
+from ava.blinds.xss import CrossSiteScriptingBlindDirectCheck
 
 
 @pytest.fixture
@@ -191,7 +191,7 @@ class TestQueryParameterBlindHandler:
         generated = []
 
         # check static payloads
-        check = CrossSiteScriptingBlindCheck("http://localhost:8080/")
+        check = CrossSiteScriptingBlindDirectCheck("http://localhost:8080/")
 
         for payload in check.payloads(vector['url'], "ava", "avascan"):
             # replace

@@ -1,5 +1,6 @@
 import pytest
 from ava.actives.path_traversal import PathTraversalCheck
+from ava.common.exception import InvalidFormatException
 
 
 @pytest.fixture
@@ -52,3 +53,14 @@ class TestPathTraversalCheck:
         response.text = ""
         test = check.check(response, check._payloads[0])
         assert not test
+
+    def test_check_payloads_positive(self, check):
+        # positive
+        payloads = ["./etc/group"]
+        assert payloads == check._check_payloads(payloads)
+
+    def test_check_payloads_negative(self, check):
+        # negative
+        payloads = ["Invalid payload"]
+        with pytest.raises(InvalidFormatException):
+            check._check_payloads(payloads)

@@ -1,5 +1,6 @@
 import re
 from ava.common.check import _ValueCheck, _TimingCheck
+from ava.common.exception import InvalidFormatException
 
 
 # metadata
@@ -15,6 +16,7 @@ class ShellInjectionCheck(_ValueCheck):
     key = "shell.value.command"
     name = "Shell Injection"
     description = "checks for shell injection by executing commands"
+    example = "; id #"
 
     def __init__(self):
         """Define static payloads"""
@@ -58,6 +60,19 @@ class ShellInjectionCheck(_ValueCheck):
         else:
             return False
 
+    def _check_payloads(self, payloads):
+        """
+        Checks if the payloads are adoptable for this class and modify the payloads to adjust to check function.
+        InvalidFormatException is raised, if a payload is not adoptable.
+        Children can override.
+        :param payloads: list of payloads
+        :return: list of modified payloads
+        """
+        for i, payload in enumerate(payloads):
+            if 'id' not in payload:
+                raise InvalidFormatException("Payload of {} must include 'id'".format(self.key))
+        return payloads
+
 
 class ShellInjectionTimingCheck(_TimingCheck):
     """
@@ -67,6 +82,7 @@ class ShellInjectionTimingCheck(_TimingCheck):
     key = "shell.timing.sleep"
     name = "Shell Injection Timing"
     description = "checks for shell injection by executing delays"
+    example = "; sleep 9 #"
 
     def __init__(self):
         """Define static payloads"""
