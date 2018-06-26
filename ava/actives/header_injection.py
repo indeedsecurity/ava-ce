@@ -15,7 +15,7 @@ class HeaderInjectionCheck(_ValueCheck):
     """
     key = "header.value.cookie"
     name = "Header Injection"
-    description = "Checks for Header Injection in response headers"
+    description = "checks for header injection in response headers"
 
     def __init__(self):
         """Define static payloads"""

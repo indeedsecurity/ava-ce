@@ -50,10 +50,14 @@ def _print_modules():
     # print names and descriptions
     for package in packages:
         print(package + ':')
-        for name, description in utility.get_package_info(package):
-            print("  {:21s} {}".format(name, description))
+        for name, description, classes in utility.get_package_info(package):
+            print("  {:26s} {}".format(name, description))
+            if package == 'actives':
+                for key, desc in classes:
+                    print("    {:24s} {}".format(key, desc))
+                print('')
 
-        if package != packages[-1]:
+        if package not in ['actives', 'passives']:
             print('')
 
 

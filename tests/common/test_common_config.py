@@ -15,6 +15,10 @@ def test_check_modules_positive(mocker):
     test = config._check_modules("actives", ["xss", "open_redirect"])
     assert test == ["xss", "open_redirect"]
 
+    # key
+    test = config._check_modules("actives", ["xss.value.href"])
+    assert test == ["xss.value.href"]
+
 
 def test_check_modules_negative(mocker):
     # __init__
@@ -26,6 +30,10 @@ def test_check_modules_negative(mocker):
     mocker.patch("os.listdir", return_value=["__init__.py", "xss.py", "open_redirect.py"])
     with pytest.raises(InvalidValueException):
         config._check_modules("actives", ["module_does_not_exist"])
+
+    # non-existent key
+    with pytest.raises(InvalidValueException):
+        config._check_modules("actives", ["non.existent.key"])
 
 
 def test_check_url_positive():

@@ -16,7 +16,7 @@ class XmlExternalEntityCheck(_ValueCheck):
     """
     key = "xxe.value.file"
     name = "XML External Entity"
-    description = "Checks for XML External Entity by accessing local files"
+    description = "checks for xml external entity by accessing local files"
 
     def __init__(self):
         """Define static payloads"""

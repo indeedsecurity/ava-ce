@@ -14,7 +14,7 @@ class SqlInjectionCheck(_ValueCheck):
     """
     key = "sql.value.error"
     name = "SQL Injection"
-    description = "Checks for SQL Injection by causing syntax errors"
+    description = "checks for sql injection by causing syntax errors"
 
     def __init__(self):
         """Define static payloads"""
@@ -59,7 +59,7 @@ class SqlInjectionDifferentialCheck(_DifferentialCheck):
     """
     key = "sql.differential.row"
     name = "SQL Injection Differential"
-    description = "Checks for SQL Injection in response body"
+    description = "checks for sql injection in response body"
 
     def __init__(self):
         """Define static payloads"""
@@ -99,7 +99,7 @@ class SqlInjectionTimingCheck(_TimingCheck):
     """
     key = "sql.timing.sleep"
     name = "SQL Injection Timing"
-    description = "Checks for SQL Injection by executing delays"
+    description = "checks for sql injection by executing delays"
 
     def __init__(self):
         """Define static payloads"""
