@@ -82,9 +82,7 @@ class CrossSiteScriptingLinkCheck(_ValueCheck):
         """Define static payload"""
         payloads = [
             "javascript:{}()",
-            '");{}();//',
             "%22);{}();//",
-            "');{}();//",
             "%27);{}();//"
         ]
 
