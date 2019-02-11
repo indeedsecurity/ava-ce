@@ -18,9 +18,9 @@ setup(
         'pytest-cov==2.5.1',
         'pytest-mock==1.6.3',
         'PyYAML==3.12',
-        'requests==2.20.0',
+        'requests==2.21.0',
         'requests-toolbelt==0.8.0',
-        'urllib3==1.22'
+        'urllib3==1.24.1'
     ],
     long_description=open('README.md').read(),
     entry_points={
