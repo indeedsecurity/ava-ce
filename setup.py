@@ -20,7 +20,7 @@ setup(
         'PyYAML==3.12',
         'requests==2.21.0',
         'requests-toolbelt==0.8.0',
-        'urllib3==1.24.1'
+        'urllib3==1.24.2'
     ],
     long_description=open('README.md').read(),
     entry_points={
