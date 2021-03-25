@@ -17,7 +17,7 @@ setup(
         'pytest==3.3.1',
         'pytest-cov==2.5.1',
         'pytest-mock==1.6.3',
-        'PyYAML==3.12',
+        'PyYAML==5.4',
         'requests==2.21.0',
         'requests-toolbelt==0.8.0',
         'urllib3==1.24.1'
